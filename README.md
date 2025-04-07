@@ -1,146 +1,121 @@
 # Sentiment Analysis
 
-A robust and accurate sentiment analysis tool for analyzing text data from various sources. This repository contains code for training models, preprocessing text, and deploying sentiment analysis as an API.
+A robust and accurate sentiment analysis microservice for analyzing text data. This repository contains code for a sentiment analysis API using DistilBERT, deployed on Google Cloud Run.
 
 ## Features
 
-- Text preprocessing pipeline optimized for sentiment analysis
-- Multiple model implementations (BERT, RoBERTa, and traditional ML approaches)
-- REST API for easy integration with other applications
-- Comprehensive evaluation metrics and visualizations
-- Support for analyzing data from multiple sources (Twitter, Reddit, custom text)
+- Text sentiment classification with high accuracy (96% on test data)
+- RESTful API with clear, consistent endpoints
+- Confidence scores and probability distribution for each prediction
+- Support for both single text and batch analysis
+- Containerized deployment for scalability
+- Automatic documentation with Swagger UI
 
-## Installation
+## Architecture
 
+- **Model**: Fine-tuned DistilBERT (distilbert-base-uncased)
+- **API Framework**: FastAPI
+- **Deployment**: Google Cloud Run
+- **Model Storage**: Google Cloud Storage
+- **Container**: Docker
+
+## Running the Sentiment Analysis Application
+
+### Local Development
+
+1. **Clone the repository**
 ```bash
-# Clone the repository
 git clone https://github.com/jigarthummar/sentiment-analysis.git
 cd sentiment-analysis
-
-# Create a virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
 ```
 
-## Quick Start
-
-```python
-from sentiment_analyzer import SentimentAnalyzer
-
-# Initialize the analyzer with the default model
-analyzer = SentimentAnalyzer()
-
-# Analyze a single text
-result = analyzer.analyze("I absolutely love this product! It's amazing.")
-print(f"Sentiment: {result['sentiment']}")
-print(f"Confidence: {result['confidence']:.2f}")
-
-# Batch analysis
-texts = [
-    "The customer service was terrible.",
-    "It works exactly as described.",
-    "I'm not sure if I would recommend this."
-]
-results = analyzer.analyze_batch(texts)
-```
-
-## Models
-
-The repository includes several pre-trained models:
-
-- **BERT-base-sentiment**: Fine-tuned BERT model (recommended for most applications)
-- **RoBERTa-sentiment**: Fine-tuned RoBERTa model (highest accuracy but slower)
-- **FastText-sentiment**: Lightweight model for resource-constrained environments
-
-To specify which model to use:
-
-```python
-analyzer = SentimentAnalyzer(model="roberta-sentiment")
-```
-
-## API Usage
-
-Start the API server:
-
+2. **Install dependencies**
 ```bash
-python -m sentiment_analyzer.api --port 8000
+pip install -r requirenments.txt
 ```
 
-Then make requests:
-
+3. **Set up Google Cloud credentials**
+   * Download the service account JSON key from Google Cloud
+   * Set the environment variable:
 ```bash
-curl -X POST http://localhost:8000/analyze \
-  -H "Content-Type: application/json" \
-  -d '{"text": "This is an excellent implementation of sentiment analysis!"}'
+export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
 ```
 
-Or using Python:
-
-```python
-import requests
-import json
-
-response = requests.post(
-    "http://localhost:8000/analyze",
-    headers={"Content-Type": "application/json"},
-    data=json.dumps({"text": "This is an excellent implementation of sentiment analysis!"})
-)
-
-print(response.json())
-```
-
-## Training Your Own Models
-
-To train on your custom dataset:
-
+4. **Run the application locally**
 ```bash
-python -m sentiment_analyzer.train \
-  --data-path path/to/your/data.csv \
-  --model-type bert \
-  --output-dir models/custom-model
+python app.py
 ```
+   * The app will be available at http://localhost:8080
 
-## Evaluation
+### Deployment to Google Cloud
 
-The repository includes tools for model evaluation:
-
+1. **Run the deployment script**
 ```bash
-python -m sentiment_analyzer.evaluate \
-  --model-path models/bert-base-sentiment \
-  --test-data path/to/test_data.csv
+chmod +x deploy.sh
+./deploy.sh
 ```
 
-## Contributing
+2. **Access the deployed service**
+   * The script will output the URL of the deployed service
+   * Alternatively, access it at: https://sentiment-analysis-api-273171502228.us-central1.run.app/
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## API Usage Examples
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Citation
-
-If you use this code in your research, please cite:
-
+### Analyze a single text
+```bash
+curl -X POST "https://sentiment-analysis-api-273171502228.us-central1.run.app/analyze" \
+     -H "Content-Type: application/json" \
+     -d '{"text":"I absolutely love this product! The quality is amazing."}'
 ```
-@software{sentiment_analysis,
-  author = {Jigar Thummar},
-  title = {Sentiment Analysis},
-  year = {2025},
-  url = {https://github.com/jigarthummar/sentiment-analysis}
+
+### Analyze multiple texts
+```bash
+curl -X POST "https://sentiment-analysis-api-273171502228.us-central1.run.app/analyze-batch" \
+     -H "Content-Type: application/json" \
+     -d '{"texts":["Exceeded my expectations! The packaging was beautiful.", "Meh... not the worst, but definitely not worth the price."]}'
+```
+
+### Check service health
+```bash
+curl "https://sentiment-analysis-api-273171502228.us-central1.run.app/health"
+```
+
+### Interactive API documentation
+Access the Swagger UI at https://sentiment-analysis-api-273171502228.us-central1.run.app/docs
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Welcome message and service information |
+| `/health` | GET | Service health check |
+| `/analyze` | POST | Analyze sentiment of a single text |
+| `/analyze-batch` | POST | Analyze sentiment of multiple texts |
+| `/docs` | GET | Swagger UI documentation |
+| `/redoc` | GET | ReDoc documentation |
+
+## Response Format
+
+The API returns sentiment analysis results in the following format:
+
+```json
+{
+  "text": "I absolutely love this product! The quality is amazing.",
+  "sentiment": "Positive",
+  "confidence": 99.86,
+  "probabilities": {
+    "negative": 0.14,
+    "positive": 99.86
+  }
 }
 ```
 
+## License
+
+This project is licensed under the MIT License.
+
 ## Acknowledgments
 
-- This project was inspired by state-of-the-art sentiment analysis research
-- Thanks to the open-source community for valuable resources and tools
+- This project was developed as part of the EAI 6010: Applications of Artificial Intelligence course at Northeastern University.
+- Thanks to the Hugging Face team for providing the DistilBERT model.
+- Thanks to the FastAPI team for the excellent web framework.
