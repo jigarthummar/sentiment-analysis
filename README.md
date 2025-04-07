@@ -31,7 +31,7 @@ cd sentiment-analysis
 
 2. **Install dependencies**
 ```bash
-pip install -r requirenments.txt
+pip install -r requirements.txt
 ```
 
 3. **Set up Google Cloud credentials**
@@ -110,12 +110,6 @@ The API returns sentiment analysis results in the following format:
 }
 ```
 
-## License
-
-This project is licensed under the MIT License.
-
 ## Acknowledgments
-
-- This project was developed as part of the EAI 6010: Applications of Artificial Intelligence course at Northeastern University.
 - Thanks to the Hugging Face team for providing the DistilBERT model.
 - Thanks to the FastAPI team for the excellent web framework.
